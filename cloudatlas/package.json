@@ -6,6 +6,13 @@
   "scripts": {
     "test": "node ./node_modules/jest/bin/jest.js"
   },
+
+  "keywords": [
+    "cloudformation",
+    "cloudatlas",
+    "aws"
+  ],
+
   "dependencies": {
     "amazon-cognito-identity-js": "^1.21.0",
     "aws-api-gateway-client": "^0.2.9",
