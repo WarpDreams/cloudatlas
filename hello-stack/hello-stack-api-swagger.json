@@ -1,0 +1,70 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Unit Test API",
+    "description": "A simple test API for unit testing",
+    "version": "1.0.0"
+  },
+  "host": "TOBE_DECIDED_AWS",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "summary": "Say hello",
+        "description": "This method checks if all AWS components are created and can be connected currectly in Cloudatlas example stack",
+        "parameters": [
+          {
+            "name": "message",
+            "in": "query",
+            "description": "The hello message",
+            "required": false,
+            "type": "string",
+            "example": "'example' field is not support by API Gateway and will be culled before sending to CloudFormation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The result message",
+            "schema": {
+              "$ref": "#/definitions/Result"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorObject"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Result": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "The Hello Message",
+          "example": "'example' field is not support by API Gateway and will be culled before sending to CloudFormation"
+        }
+      }
+    },
+
+    "ErrorObject": {
+      "type": "object",
+      "properties": {
+        "errorMessage": {
+          "type": "string",
+          "description": "an explaination about the error"
+        }
+      }
+    }
+  }
+}

@@ -2,7 +2,8 @@
   "lerna": "2.11.0",
   "packages": [
     "./cloudatlas",
-    "./example-stack"
+    "./example-stack",
+    "./hello-stack"
   ],
   "version": "0.0.0"
 }

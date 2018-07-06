@@ -35,18 +35,6 @@ program
   .option('-s, --stack <name>', 'Specify the target stack. ')
   .parse(process.argv);
 
-console.log(' --------- stack:', program.stack);
-
-// console.log(' int: %j', program.integer);
-// console.log(' float: %j', program.float);
-// console.log(' optional: %j', program.optional);
-// program.range = program.range || [];
-// console.log(' range: %j..%j', program.range[0], program.range[1]);
-// console.log(' list: %j', program.list);
-// console.log(' collect: %j', program.collect);
-// console.log(' verbosity: %j', program.verbose);
-// console.log(' args: %j', program.args);
-
 if (program.verbose) {
   log.level = 'debug';
 }
