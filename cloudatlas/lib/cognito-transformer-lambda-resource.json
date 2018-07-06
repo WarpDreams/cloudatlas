@@ -1,0 +1,92 @@
+{
+  "CognitoRoleMappingTransformer": {
+    "Type": "AWS::Lambda::Function",
+    "Properties": {
+      "Code": {
+        "ZipFile": {
+          "Fn::Join": [
+            "",
+            [
+              "var response = require('cfn-response');",
+              "exports.handler = function(event, context) {",
+              "  let resourceProperties = event.ResourceProperties;",
+              "  let responseData = {",
+              "    RoleMapping: {",
+              "      [resourceProperties.IdentityProvider]: {",
+              "        Type: resourceProperties.Type,",
+              "      },",
+              "    },",
+              "  };",
+              "  if (resourceProperties.AmbiguousRoleResolution) {",
+              "    responseData.RoleMapping[resourceProperties.IdentityProvider].AmbiguousRoleResolution = resourceProperties.AmbiguousRoleResolution;",
+              "  }",
+              "  if (resourceProperties.RulesConfiguration) {",
+              "    responseData.RoleMapping[resourceProperties.IdentityProvider].RulesConfiguration = resourceProperties.RulesConfiguration;",
+              "  }",
+              "  response.send(event, context, response.SUCCESS, responseData);",
+              "};"
+            ]
+          ]
+        }
+      },
+      "Handler": {
+        "Fn::Join": [
+          "",
+          [
+            "index",
+            ".handler"
+          ]
+        ]
+      },
+      "Role": {
+        "Fn::GetAtt": [
+          "TransformerLambdaExecutionRole",
+          "Arn"
+        ]
+      },
+      "Runtime": "nodejs6.10",
+      "Timeout": "30"
+    }
+  },
+  "TransformerLambdaExecutionRole": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }
+        ]
+      },
+      "Path": "/",
+      "Policies": [
+        {
+          "PolicyName": "root",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "arn:aws:logs:*:*:*"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

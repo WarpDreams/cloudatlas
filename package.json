@@ -1,0 +1,25 @@
+{
+  "name": "cloudatlas-example",
+  "version": "1.0.0",
+  "description": "An example stack using Cloudatlas",
+  "main": "index.js",
+  "scripts": {
+    "lerna": "./node_modules/lerna/bin/lerna.js",
+    "bootstrap": "./node_modules/lerna/bin/lerna.js bootstrap"
+  },
+  "keywords": [
+    "cloudatlas",
+    "aws"
+  ],
+  "author": "Jianyin Shen",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^23.3.0",
+    "lerna": "^2.11.0"
+  },
+  "dependencies": {
+    "camelcase": "^5.0.0",
+    "lodash": "^4.17.10",
+    "uppercamelcase": "^3.0.0"
+  }
+}

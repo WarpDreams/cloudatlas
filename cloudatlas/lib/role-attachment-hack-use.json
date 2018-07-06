@@ -1,0 +1,42 @@
+{
+  "TransformedRoleMapping": {
+    "Type": "Custom::TransformedRoleMapping",
+    "Properties": {
+      "ServiceToken": {
+        "Fn::ImportValue": "CognitoRoleMappingTransformer"
+      },
+      "Type": "Token",
+      "AmbiguousRoleResolution": "AuthenticatedRole",
+      "IdentityProvider": {
+        "Fn::Join": [
+          ":",
+          [
+            {
+              "Fn::GetAtt": [
+                "CognitoUserPool",
+                "ProviderName"
+              ]
+            },
+            {
+              "Ref": "CognitoUserPoolClient"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "IdentityPoolRoleAttachment": {
+    "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+    "Properties": {
+      "IdentityPoolId": {
+        "Ref": "CognitoIdentityPool"
+      },
+      "RoleMappings": {
+        "Fn::GetAtt": [
+          "TransformedRoleMapping",
+          "RoleMapping"
+        ]
+      }
+    }
+  }
+}

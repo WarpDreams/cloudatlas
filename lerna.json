@@ -1,0 +1,8 @@
+{
+  "lerna": "2.11.0",
+  "packages": [
+    "./cloudatlas",
+    "./example-stack"
+  ],
+  "version": "0.0.0"
+}

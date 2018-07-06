@@ -1,0 +1,125 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Unit Test API",
+    "description": "A simple test API for unit testing",
+    "version": "1.0.0"
+  },
+  "host": "TOBE_DECIDED_AWS",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/hello": {
+      "get": {
+        "summary": "For unit testing",
+        "description": "Dummy item for unit testing",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL to pass in",
+            "required": false,
+            "type": "string",
+            "example": "'example' field is not support by API Gateway and will be culled before sending to CloudFormation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "extraction result",
+            "schema": {
+              "$ref": "#/definitions/Result"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorObject"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Say hello POST version",
+        "description": "Testing description",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL to pass in",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "extraction result",
+            "schema": {
+              "$ref": "#/definitions/Result"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorObject"
+            }
+          }
+        }
+      },
+      
+      "put": {
+        "summary": "Say hello PUT version",
+        "description": "Testing description",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The URL to pass in",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "extraction result",
+            "schema": {
+              "$ref": "#/definitions/Result"
+            }
+          },
+          "400": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorObject"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Result": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "The Hello Message",
+          "example": "'example' field is not support by API Gateway and will be culled before sending to CloudFormation"
+        }
+      }
+    },
+
+    "ErrorObject": {
+      "type": "object",
+      "properties": {
+        "errorMessage": {
+          "type": "string",
+          "description": "an explaination about the error"
+        }
+      }
+    }
+  }
+}
