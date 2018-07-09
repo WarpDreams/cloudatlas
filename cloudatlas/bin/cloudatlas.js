@@ -14,6 +14,7 @@ const gulp = require('gulp');
 let zip = require("gulp-zip");
 const log = require('winston');
 const _ = require('lodash');
+const { parseStackName } = require('../utils');
 
 const { StackManager, CloudFormation, Lambda } = require('../index');
 
@@ -24,9 +25,6 @@ const s3 = require('gulp-s3-upload')({
   accessKeyId: AWS_ACCESS_KEY_ID,
   secretAccessKey: AWS_SECRET_ACCESS_KEY
 });
-
-//const camelCase = require('camelcase');
-const upperCamelCase = require('uppercamelcase');
 
 program
   .version('0.1.0')
@@ -47,19 +45,6 @@ const checkConfigurations = (package_json) => {
   return;
 }
 
-const legalStackName = (originalName) => {
-  let name = originalName;
-  if (_.isEmpty(process.env.NODE_ENV)) {
-    log.warn('NODE_ENV environment variable is not found.');
-  }
-  else {
-    name = name + '-' + process.env.NODE_ENV;
-  }
-
-  name = upperCamelCase(name);
-  return name;
-}
-
 const makeGulpTasks = async (package_json, stacksInfo) => {
 
   if (_.isEmpty(process.env.NODE_ENV)) {
@@ -78,13 +63,12 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
   stacksByNames = {};
   for (let i = 0; i < stacks.length; i++) {
     const stack = stacks[i];
-    const originalStackName = stack.name;
-    const legalName = legalStackName(originalStackName);
+    const { originalStackName, legalStackName } = parseStackName(stack.name);
 
-    const cloudFormationObj = new CloudFormation(legalName);
+    const cloudFormationObj = new CloudFormation(legalStackName);
     stacksByNames[originalStackName] = cloudFormationObj; //This is the original name
 
-    log.info(`Cloudatlas is now using name "${legalName}" for the deployment of ${originalStackName}`);
+    log.info(`Cloudatlas is now using name "${legalStackName}" for the deployment of ${originalStackName}`);
     wireStack(originalStackName, cloudFormationObj);
 
     try {
@@ -104,11 +88,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
   for (let i = 0; i < stacks.length; i++) {
 
     const stack = stacks[i];
-    //Decide the root stack name.
-    const originalStackName = stack.name;
-    assert.ok(originalStackName, 'name missing from cloudatlas configuration in package.json');
-
-    const name = legalStackName(originalStackName);
+    const { originalStackName, legalStackName } = parseStackName(stack.name);
 
     const packageTaskName = `package_${originalStackName}`;
     const uploadTaskName = `upload_${originalStackName}`;

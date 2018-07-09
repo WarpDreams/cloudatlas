@@ -31,7 +31,7 @@ const wireStack = (name, stack) => {
       wireFunctionStack(stack);
       break;
     default:
-      throw new Error(`Unkown stack: ${name}`); 
+      throw new Error(`Unknown stack: ${name}`); 
   }
 }
 

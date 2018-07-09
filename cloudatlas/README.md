@@ -20,10 +20,7 @@ In your `package.json`, add section `cloudatlas`:
 
 //file package.json
 
-{
-  
-  ...
-   
+{   
   "cloudatlas": {
     "source": "hello-stack-cloudatlas",
     "stacks": [
@@ -44,6 +41,15 @@ In your `package.json`, add section `cloudatlas`:
 }
   
 ```
+
+It's convienient to add a shortcut to the cloudatlas cli in your package.json file, under `scripts`
+
+```json
+  "scripts": {
+    "cloudatlas": "node ./node_modules/@warpdreams/cloudatlas/bin/cloudatlas.js"
+  }
+```
+
 
 `hello-stack-cloudatlas` is the Cloudatlas stack assembly script you need to write (described in the below section).
 
@@ -118,9 +124,9 @@ Set the environment for the stack by doing:
 export NODE_ENV=dev
 ```
 
-Then do:
+If you added `cloudatlas` into `scripts` section of your `package.json` as shown previously, you can just do: 
 
-```
+```bash
 npm run cloudatlas -- --verbose deploy
 ```
 
