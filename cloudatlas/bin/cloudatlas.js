@@ -103,7 +103,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
     await fsExtra.ensureDir(DEST_PATH);
     //Local temp library
     const dateStr = (new Date()).getTime();
-    const build_file_name = `${name}_${dateStr}.zip`;
+    const build_file_name = `${originalStackName}_${dateStr}.zip`;
     const writtenZipPath = path.join(process.cwd(), DEST_PATH, build_file_name);
 
     //Task: build the stack and zip up artifacts
@@ -136,7 +136,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
       });
 
       if (stack.lambdaSourceFiles) {
-        log.info(`Zipping up files for stack ${name}: ${build_file_name}`);
+        log.info(`Zipping up files for stack ${originalStackName}: ${build_file_name}`);
         return gulp.src(stack.lambdaSourceFiles, { base: "." })
           .pipe(zip(build_file_name))
           .pipe(gulp.dest(DEST_PATH));
@@ -163,9 +163,9 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
     //Task: deploy
     gulp.task(deployTaskName, gulp.series(packageTaskName, uploadTaskName, async () => {
       const { cloudFormationObj } = stacksInfo[originalStackName];
-      assert.ok(cloudFormationObj, `Internal inconsistency: requested to run deploy but did not find tacksInfo[${name}].cloudFormationObj`);
+      assert.ok(cloudFormationObj, `Internal inconsistency: requested to run deploy but did not find tacksInfo[${originalStackName}].cloudFormationObj`);
 
-      log.info(`Deploying CloudFormation Stack: `, name, '...');
+      log.info(`Deploying CloudFormation Stack:`, originalStackName, '...');
 
       try {
         const upsertData = await stackManager.startUpsertStack(cloudFormationObj);

@@ -27,7 +27,10 @@
     "source": "sample-stack-cloudatlas",
     "stacks": [
       {
-        "name": "sample-stack-persist-cloudatlas"
+        "name": {
+          "dev": "sample-stack-persist-cloudatlas-dev",
+          "test": "sample-stack-persist-cloudatlas-test"
+        }
       },
 
       {

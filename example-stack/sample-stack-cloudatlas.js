@@ -23,15 +23,14 @@ let sampleStackPersistUser = null;
 let sampleStackPersistBucket = null;
 
 const wireStack = (name, stack) => {
-  switch(name) {
-    case 'sample-stack-persist-cloudatlas':
-      wirePersistStack(stack);
-      break;
-    case 'sample-stack-functions-cloudatlas':
-      wireFunctionStack(stack);
-      break;
-    default:
-      throw new Error(`Unknown stack: ${name}`); 
+  if (name.indexOf('sample-stack-persist-cloudatlas') === 0) {
+    wirePersistStack(stack);
+  }
+  else if (name.indexOf('sample-stack-functions-cloudatlas') === 0) {
+    wireFunctionStack(stack);
+  }
+  else {
+    throw new Error(`Unknown stack: ${name}`);
   }
 }
 
