@@ -11,7 +11,7 @@ const {
   CognitoUserGroup,
   S3
 }
-  = require('cloudatlas');
+  = require('@warpdreams/cloudatlas');
 
 const swagger = require('./sample-stack-swagger-api.json');
 

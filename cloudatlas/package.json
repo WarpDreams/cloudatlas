@@ -1,18 +1,16 @@
 {
-  "name": "cloudatlas",
+  "name": "@warpdreams/cloudatlas",
   "description": "An AWS CloudFormation tool to build stacks programmingly",
   "version": "0.1.0",
   "main": "index.js",
   "scripts": {
     "test": "node ./node_modules/jest/bin/jest.js"
   },
-
   "keywords": [
     "cloudformation",
     "cloudatlas",
     "aws"
   ],
-
   "dependencies": {
     "amazon-cognito-identity-js": "^1.21.0",
     "aws-api-gateway-client": "^0.2.9",
@@ -25,6 +23,7 @@
     "gulp-s3-upload": "^1.7.0",
     "gulp-zip": "^4.1.0",
     "lodash": "^4.17.4",
+    "uppercamelcase": "^3.0.0",
     "winston": "^2.4.3"
   },
   "devDependencies": {

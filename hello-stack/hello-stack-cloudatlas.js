@@ -4,7 +4,7 @@ const {
   Lambda,
   ApiGateway
 }
-  = require('cloudatlas');
+  = require('@warpdreams/cloudatlas');
 
 //The swagger JSON file for API Gateway
 const swagger = require('./hello-stack-api-swagger.json');

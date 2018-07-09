@@ -162,6 +162,7 @@ class Lambda extends AWSComponent {
           "S3Key": this.sourcePackageName
         },
         "Handler": this.handlerPath,
+        "Runtime": 'nodejs8.10',
         "Timeout": this.timeoutSecs,
         "MemorySize": this.memorySizeMB,
 
