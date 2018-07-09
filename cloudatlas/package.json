@@ -1,7 +1,7 @@
 {
   "name": "@warpdreams/cloudatlas",
   "description": "An AWS CloudFormation tool to build stacks programmingly",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "scripts": {
     "test": "node ./node_modules/jest/bin/jest.js"
@@ -11,6 +11,24 @@
     "cloudatlas",
     "aws"
   ],
+
+  "contributors": [
+    {
+      "name": "Jianyin Shen",
+      "email": "jian@warpdreams.com"
+    }
+  ],
+
+  "author": "Jianyin Shen",
+  "license": "MIT",
+
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:WarpDreams/cloudatlas.git"
+  },
+
+  "homepage": "https://github.com/WarpDreams/cloudatlas",
+
   "dependencies": {
     "amazon-cognito-identity-js": "^1.21.0",
     "aws-api-gateway-client": "^0.2.9",
