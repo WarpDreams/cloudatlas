@@ -34,6 +34,7 @@ class S3 extends AWSComponent {
       websiteConfigs.ErrorDocument = errorDocument;
     }
     this._configurations.WebsiteConfiguration = websiteConfigs;
+    this.bucketPolicyTemplate = this.publicIndividualReadBucketPolicyTemplate;
   }
 
   get bucketName() {

@@ -60,7 +60,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
   log.debug(`Running stack assembly scripts:  ${fullScriptPath}`);
   const { wireStack } = require(fullScriptPath);
 
-  stacksByNames = {};
+  const stacksByNames = {};
   for (let i = 0; i < stacks.length; i++) {
     const stack = stacks[i];
     const { originalStackName, legalStackName } = parseStackName(stack.name);
@@ -116,7 +116,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
 
       log.info(`Generating AWS CloudFormation template file for ${originalStackName}...`);
       //Setup zip file and bucket location for all Lambdas
-      for (component of cloudFormationObj.components) {
+      for (let component of cloudFormationObj.components) {
         if (component instanceof Lambda) {
           if (!component.code) {
             const fileName = path.basename(writtenZipPath);
@@ -141,6 +141,10 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
           .pipe(zip(build_file_name))
           .pipe(gulp.dest(DEST_PATH));
       }
+      else {
+        log.info(`no lambdaSourceFiles specified for stack ${originalStackName} and nothing to package`);
+        return Promise.resolve(0);
+      }
     });
 
     //Task: upload
@@ -157,6 +161,10 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
             log.error('Upload encountered error: ', error);
             throw error;
           });
+      }
+      else {
+        log.info(`no lambdaSourceFiles specified for stack ${originalStackName} and nothing to upload`);
+        return Promise.resolve(0);
       }
     }))
 
@@ -221,7 +229,7 @@ async function main(command) {
 
   log.debug('Tasks to run: ', tasksToRun);
 
-  for (task of tasksToRun) {
+  for (let task of tasksToRun) {
     gulp.task(task)();
   }
 }
