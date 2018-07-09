@@ -92,7 +92,6 @@ const wirePersistStack = (stack) => {
   //S3 bucket
   sampleStackPersistBucket = stack.createS3Bucket('Website')
   sampleStackPersistBucket.setupAsStaticWebSite('index.html');
-  sampleStackPersistBucket.bucketPolicyTemplate = sampleStackPersistBucket.publicIndividualReadBucketPolicyTemplate;
 }
 
 const wireFunctionStack = (stack2) => {

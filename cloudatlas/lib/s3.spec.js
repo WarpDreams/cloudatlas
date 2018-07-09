@@ -51,4 +51,11 @@ describe('test S3', () => {
       }
     )
   })
+
+  test('Should create S3 spec as website correctly', () => {
+    s3.setupAsStaticWebSite('index.html');
+    const template = s3.template;
+    //expect(template).toEqual({});
+    expect(template).toEqual(expect.objectContaining(s3.publicIndividualReadBucketPolicyTemplate));
+  })
 })
