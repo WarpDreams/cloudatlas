@@ -3,7 +3,7 @@ const AWSComponent = require('./aws-component').AWSComponent
 const AWSObject = require('./aws-object').AWSObject
 const Policy = require('./policy').Policy
 const Role = require('./role').Role
-const cst = require('./constants')
+
 const _ = require('lodash')
 
 

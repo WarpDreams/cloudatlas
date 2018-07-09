@@ -1,7 +1,7 @@
 const DynamoDbTable = require('./dynamodb-table').DynamoDbTable
 const AWSComponent = require('./aws-component').AWSComponent
 const { CloudFormation } = require('./cloud-formation');
-const cst = require('./constants')
+
 const _ = require('lodash')
 const assert = require('assert')
 

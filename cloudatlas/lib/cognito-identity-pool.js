@@ -6,7 +6,7 @@ const Role = require('./role').Role
 const CognitoUserPool = require('./cognito-user-pool').CognitoUserPool
 const CognitoUserPoolAppAgent = require('./cognito-user-pool-app-client').CognitoUserPoolAppClient
 
-const cst = require('./constants')
+
 const _ = require('lodash')
 const log = require('winston')
 /*

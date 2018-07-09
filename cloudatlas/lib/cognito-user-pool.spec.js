@@ -2,7 +2,7 @@ const CognitoUserPool = require('./cognito-user-pool').CognitoUserPool
 const AWSComponent = require('./aws-component').AWSComponent
 
 const Lambda = require('./lambda').Lambda
-const cst = require('./constants')
+
 const _ = require('lodash')
 
 const { CloudFormation } = require('./cloud-formation');

@@ -13,7 +13,7 @@ const { CognitoUserPoolAppClient } = require('./cognito-user-pool-app-client');
 const S3 = require('./s3').S3
 
 const _ = require('lodash')
-const cst = require('./constants')
+
 
 const AWSComponent = require('./aws-component').AWSComponent
 const log = require('winston')
@@ -179,7 +179,7 @@ class CloudFormation extends AWSComponent {
     })
 
     const finalTemplate = {
-      'AWSTemplateFormatVersion': cst.AWSTemplateFormatVersion,
+      'AWSTemplateFormatVersion': '2010-09-09',
       'Resources': resources,
       'Outputs': outputs
     }

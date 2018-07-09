@@ -36,7 +36,6 @@ describe('test lambda', () => {
           "S3Key": 'Test.zip'
         },
         "Handler": 'src/hander.js',
-        "Runtime": 'nodejs6.10',
         "Timeout": 15,
         "MemorySize": 256,
 

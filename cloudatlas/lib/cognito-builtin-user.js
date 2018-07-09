@@ -1,7 +1,7 @@
 const assert = require('assert')
 const AWSComponent = require('./aws-component').AWSComponent
 const AWSObject = require('./aws-object').AWSObject
-const cst = require('./constants')
+
 const _ = require('lodash')
 
 class CognitoBuiltinUser extends AWSComponent {

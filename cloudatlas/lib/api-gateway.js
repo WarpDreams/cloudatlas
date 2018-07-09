@@ -2,7 +2,7 @@ const assert = require('assert')
 const _ = require('lodash')
 
 const AWSComponent = require('./aws-component').AWSComponent
-const cst = require('./constants')
+
 const Policy = require('./policy').Policy
 const Lambda = require('./lambda').Lambda
 const fs = require('fs')

@@ -1,7 +1,7 @@
 const assert = require('assert')
 const AWSComponent = require('./aws-component').AWSComponent
 const Policy = require('./policy').Policy
-const cst = require('./constants')
+
 const _ = require('lodash')
 
 const LAMBDA_DEFAULT_TIMEOUT_SECS = 10
@@ -162,7 +162,6 @@ class Lambda extends AWSComponent {
           "S3Key": this.sourcePackageName
         },
         "Handler": this.handlerPath,
-        "Runtime": cst.NodeJSRuntime,
         "Timeout": this.timeoutSecs,
         "MemorySize": this.memorySizeMB,
 
