@@ -58,7 +58,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
   
   const fullScriptPath = path.join(process.cwd(), source);
   log.debug(`Running stack assembly scripts:  ${fullScriptPath}`);
-  const { wireStack } = require(fullScriptPath);
+  const { wireStack, afterStackDeploy } = require(fullScriptPath);
 
   const stacksByNames = {};
   for (let i = 0; i < stacks.length; i++) {
@@ -110,7 +110,6 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
     gulp.task(packageTaskName, () => {
 
       const fullScriptPath = path.join(process.cwd(), source);
-      const { wireStacks } = require(fullScriptPath);
 
       let cloudFormationObj = stacksByNames[originalStackName];
 
@@ -182,8 +181,24 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
       }
       catch (exception) {
         log.error('CloudFormation Upsert error: ', exception.stack);
+
+        if (afterStackDeploy) {
+          await afterStackDeploy(originalStackName, cloudFormationObj, exception);
+        }
         throw exception; //re-throw to allow gulp to fail
       }
+
+      //Reaching here means that the deploy is successful.
+      if (afterStackDeploy) {
+        try {
+          await afterStackDeploy(originalStackName, cloudFormationObj);
+        }
+        catch (exception) {
+          log.error('Received error on calling afterStackDeploy: ' + exception.stack);
+          throw exception;
+        }
+      }
+
     }))
   }; //end each stack
 

@@ -1,4 +1,5 @@
 const assert = require('assert');
+const log = require('winston');
 
 const {
   Lambda,
@@ -32,3 +33,11 @@ const wireStack = (name, stack) => {
 }
 
 exports.wireStack = wireStack;
+
+const afterStackDeploy = async (name, stack, error) => {
+  if (!error) {
+    log.info('This is callback from hello-stack after stack is deployed successfully for stack name: ' + stack.stackName);
+  }
+}
+
+exports.afterStackDeploy = afterStackDeploy;
