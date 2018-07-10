@@ -10,7 +10,7 @@ The idea is to construct a comprehensive AWS CloudFormation stack with minimum s
 
 ### 1. Install Cloudatlas:
 
-`npm install --save-dev cloudatlas`
+`npm install --save-dev @warpdreams/cloudatlas`
 
 ### 3. Update your `package.json` file
 

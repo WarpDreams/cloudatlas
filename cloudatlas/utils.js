@@ -2,6 +2,7 @@ const assert = require('assert');
 const _ = require('lodash');
 //const camelCase = require('camelcase');
 const upperCamelCase = require('uppercamelcase');
+const log = require('winston');
 
 //Returns: { originalStackName, legalStackName }
 const parseStackName = (originalNameOrObject) => {
