@@ -14,7 +14,17 @@ describe('test cloudatlas', () => {
       });
 
       expect(originalStackName).toEqual('hardwired-name');
-      expect(legalStackName).toEqual('HardwiredName');
+      expect(legalStackName).toEqual('hardwired-name');
+    }
+
+
+    {
+      const { originalStackName, legalStackName } = parseStackName({
+        "unittest": 'ABSOUTE'
+      });
+
+      expect(originalStackName).toEqual('ABSOUTE');
+      expect(legalStackName).toEqual('ABSOUTE');
     }
 
     {
