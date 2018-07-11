@@ -1,7 +1,7 @@
 {
   "name": "@warpdreams/cloudatlas",
   "description": "An AWS CloudFormation tool to build stacks programmingly",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "index.js",
   "scripts": {
     "test": "node ./node_modules/jest/bin/jest.js"

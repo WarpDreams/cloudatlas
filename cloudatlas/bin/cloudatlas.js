@@ -81,7 +81,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
       }
     }
     catch (exception) {
-      log.warn(`Cloudatlas can not find deployed stack info for ${cloudFormationObj.stackName} because: ${error}`);
+      log.warn(`Cloudatlas can not find deployed stack info for ${cloudFormationObj.stackName} because: ${exception}`);
     }
   }
 
