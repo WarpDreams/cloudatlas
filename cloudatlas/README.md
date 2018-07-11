@@ -8,11 +8,13 @@ The idea is to construct a comprehensive AWS CloudFormation stack with minimum s
 
 ## Install and Use Cloudatlas
 
+You can find the complete source code for the example of this section at [here](https://github.com/WarpDreams/cloudatlas/tree/master/hello-stack)
+
 ### 1. Install Cloudatlas:
 
 `npm install --save-dev @warpdreams/cloudatlas`
 
-### 3. Update your `package.json` file
+### 2. Update your `package.json` file
 
 In your `package.json`, add section `cloudatlas`:
 
@@ -51,7 +53,7 @@ It's convienient to add a shortcut to the cloudatlas cli in your package.json fi
 ```
 
 
-`hello-stack-cloudatlas` is the Cloudatlas stack assembly script you need to write (described in the below section).
+[hello-stack-cloudatlas](https://github.com/WarpDreams/cloudatlas/tree/master/hello-stack/hello-stack-cloudatlas.js) is the Cloudatlas stack assembly script you need to write (described in the below section).
 
 `bucket` declares a utility AWS S3 bucket which you should have write access to. Cloudatlas will use this bucket to do bookkeepings. 
 
@@ -104,7 +106,7 @@ exports.wireStack = wireStack;
 
 ```
 
-The complete example including the swagger file can be found under folder [hello-stack](hello-stack)
+The complete example including the swagger file can be found here: [hello-stack-cloudatlas](https://github.com/WarpDreams/cloudatlas/tree/master/hello-stack)
 
 ### 4. Deploy the stack
 
@@ -162,8 +164,12 @@ It'd be benifical to look at an example more practical than "hello world". Let's
 - DynamoDB access via Lambda is regulated via IAM;
 - S3 write access via Lambda is regulated via IAM
 
+Additionally, you would like to do some code deployments after the stack is ready, i.e uploading your static HTML files to the S3 bucket for web hosting.
+
 It is also benifical to use two stacks instead of one. We put data persistant component such as user pool and DynamoDB tables in one stack, and volatile components such as Lambda and API Gateway in a second stack.
 
-Refer to [example-stack](example-stack) for the whole package.
+With `Cloudatlas` you can do all above in one single script!
+
+Refer to [example-stack](https://github.com/WarpDreams/cloudatlas/tree/master/hello-stack) for the whole package.
 
 (more details to follow)
