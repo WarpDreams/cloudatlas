@@ -1,5 +1,7 @@
 # Cloudatlas
 
+[![npm version](https://badge.fury.io/js/%40warpdreams%2Fcloudatlas.svg)](https://badge.fury.io/js/%40warpdreams%2Fcloudatlas)
+
 ## Overview
 
 Cloudatlas is a CLI tool to produce, deploy and update AWS CloudFormation stacks.
