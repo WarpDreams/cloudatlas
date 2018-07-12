@@ -48,8 +48,6 @@ class DynamoDbTable extends AWSComponent {
     }
     this.autoScalingRole = null;
     this.scalingItems = null;
-    this.autoScaleInCoolDownSecs = 30;
-    this.autoScaleOutCoolDownSecs = 30;
   }
 
   get tableName() {
@@ -58,10 +56,14 @@ class DynamoDbTable extends AWSComponent {
 
   /**
    * Set the auto scaling for the table or its index. 
-   * If max <= 0, it means switching the auto scaling off
+   * If max <= 0, it means switching the auto scaling off. 
+   * 
    * @params target optional, to set which one (table or GSI) the auto scaling applies. Notice: does not support this parameter for now.
    */
   setAutoScaling(minCapacity, maxCapacity, target) {
+
+    // For detailed CloudFormation document: 
+    // https://aws.amazon.com/blogs/database/how-to-use-aws-cloudformation-to-configure-auto-scaling-for-amazon-dynamodb-tables-and-indexes/
 
     assert.ok(!target, `Specified auto scaling target '${target}' which is not supported at the moment. auto scaling capacity will apply on the table and all GSIs`);
 
@@ -104,61 +106,50 @@ class DynamoDbTable extends AWSComponent {
             "sts:AssumeRole"
           ]
         }]
-      };
+      }
 
+      //Setup ScalableTarget object for this table and all GSI
       this.scalingItems = {};
-
-      //Setup ScalableTarget object for this table 
       //For the table itself
       const readAndWrite = ['Read', 'Write'];
       for (let rw of readAndWrite) {
-        const tableScalableTargetRead = `${this.fullName}${rw}ScalableTarget`;
-        this.scalingItems[tableScalableTargetRead] = {
+        const tableScalableTarget = `${this.fullName}${rw}ScalableTarget`;
+        const autoScaleRoleARN = {
+          "Fn::GetAtt": [
+            this.autoScalingRole.fullName,
+            "Arn"
+          ]
+        };
+        this.scalingItems[tableScalableTarget] = {
           "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
           "Properties": {
             "MaxCapacity": maxCapacity,
             "MinCapacity": minCapacity,
             "ResourceId": `table/${this.tableName}`,
-            "RoleARN": {
-              "Fn::GetAtt": [
-                this.autoScalingRole.fullName,
-                "Arn"
-              ]
-            },
+            "RoleARN": autoScaleRoleARN,
             "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
             "ServiceNamespace": "dynamodb"
           }
         }
 
-        //Add scaling policy
-        const tableScalablePolicy = `${this.fullName}${rw}ScalingPolicy`;
-        this.scalingItems[tableScalablePolicy] = {
-          "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
-          "Properties": {
-            "PolicyName": tableScalablePolicy,
-            "PolicyType": "TargetTrackingScaling",
-            "ScalingTargetId": {
-              "Ref": tableScalableTargetRead
-            },
-            "TargetTrackingScalingPolicyConfiguration": {
-              "TargetValue": 70,
-              "ScaleInCooldown": this.autoScaleInCoolDownSecs,
-              "ScaleOutCooldown": this.autoScaleOutCoolDownSecs,
-              "PredefinedMetricSpecification": {
-                //Only two possible values:
-                //DynamoDBReadCapacityUtilization
-                //DynamoDBWriteCapacityUtilization
-                //Which one must match the ScalableDimension of ScalableTarget 
-                "PredefinedMetricType": `DynamoDB${rw}CapacityUtilization` //Only two possible values: 
+        if (this.properties['GlobalSecondaryIndexes']) {
+          for (let gsi of this.properties['GlobalSecondaryIndexes']) {
+            const indexName = gsi['IndexName'];
+            const indexScalableTarget = `${indexName}${rw}ScalableTarget`;
+            this.scalingItems[indexScalableTarget] = {
+              "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+              "Properties": {
+                "MaxCapacity": maxCapacity,
+                "MinCapacity": minCapacity,
+                "ResourceId": `table/${this.tableName}/index/${indexName}`,
+                "RoleARN": autoScaleRoleARN,
+                "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
+                "ServiceNamespace": "dynamodb"
               }
             }
-          }
-        }
-        
+          } // for gsi of
+        } //if
       }
-
-
-      //TODO: Do it for GSI as well.
     }
   }
 
@@ -242,10 +233,9 @@ class DynamoDbTable extends AWSComponent {
     }
 
     if (this.autoScalingRole && this.scalingItems) {
-      template = _.merge(template, this.autoScalingRole.template);
       template = _.merge(template, this.scalingItems);
+      template = _.merge(template, this.autoScalingRole.template);
     }
-
     return template
   }
 }
