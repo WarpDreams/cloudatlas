@@ -10,8 +10,7 @@ const {
   CognitoUserPoolAppClient,
   CognitoUserGroup,
   S3
-}
-  = require('@warpdreams/cloudatlas');
+} = require('@warpdreams/cloudatlas');
 
 const swagger = require('./sample-stack-swagger-api.json');
 
@@ -59,10 +58,31 @@ const wirePersistStack = (stack) => {
     ],
     AttributeDefinitions: [
       { AttributeName: "year", AttributeType: "N" },
-      { AttributeName: "title", AttributeType: "S" }
+      { AttributeName: "title", AttributeType: "S" },
+      { AttributeName: "itemForGSI", AttributeType: "S" }
+    ],
+
+    GlobalSecondaryIndexes: [
+      //Group index by groups
+      {
+        IndexName: 'ScaleIndex',
+        KeySchema: [
+          { AttributeName: "itemForGSI", KeyType: "HASH" }
+        ],
+
+        Projection: {
+          ProjectionType: "ALL"
+        },
+
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1
+        }
+      }
     ]
+    
   });
-  
+
   sampleStackPersistTable.setAutoScaling(1, 11);
 
   //Create sampleStackPersistUser pool
@@ -144,24 +164,18 @@ const wireFunctionStack = (stack2) => {
    * A user in Cognito user pool which isn't assigned to any user groups will default to 
    * Cognito identity pool authenticated role. 
    */
-  const basicAccessStatements =
-    [sampleStackGateway.policyStatementForAccess([ApiGateway.ACCESS_LEVEL_READ],
-      {
-        methods: ['get', 'post'],
-        path: '/checkDeployment'
-      }
-    )];
+  const basicAccessStatements = [sampleStackGateway.policyStatementForAccess([ApiGateway.ACCESS_LEVEL_READ], {
+    methods: ['get', 'post'],
+    path: '/checkDeployment'
+  })];
 
   /*
    * Statements for advanced user, which is assigned to Cognito User Pool User Group. 
    */
-  const advancedAccessStatements =
-    [sampleStackGateway.policyStatementForAccess([ApiGateway.ACCESS_LEVEL_READ],
-      {
-        methods: ['get', 'post', 'put'],
-        path: '/checkDeployment'
-      }
-    )];
+  const advancedAccessStatements = [sampleStackGateway.policyStatementForAccess([ApiGateway.ACCESS_LEVEL_READ], {
+    methods: ['get', 'post', 'put'],
+    path: '/checkDeployment'
+  })];
 
   // let unauthstatements = [
   //   sampleStackGateway.policyStatementForAccess([ ApiGateway.ACCESS_LEVEL_READ ], 
@@ -176,4 +190,3 @@ const wireFunctionStack = (stack2) => {
     sampleStackIdentityPool.assumeRolePolicyDocumentForCognitoIdentityPool(true);
   sampleStackTestUserGroup.policyStatements = advancedAccessStatements;
 }
-

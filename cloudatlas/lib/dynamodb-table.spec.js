@@ -204,7 +204,7 @@ describe('test dynamoDB', () => {
       AttributeDefinitions: [
         { AttributeName: "year", AttributeType: "N" },
         { AttributeName: "title", AttributeType: "S" },
-        { AttributeName: "itemForGSI", AttributeDataType: "S" }
+        { AttributeName: "itemForGSI", AttributeType: "S" }
       ],
       ProvisionedThroughput: {
         ReadCapacityUnits: 12,
@@ -253,7 +253,7 @@ describe('test dynamoDB', () => {
             "Arn",
           ],
         },
-        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ScalableDimension": "dynamodb:index:ReadCapacityUnits",
         "ServiceNamespace": "dynamodb",
       },
       "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
@@ -271,7 +271,7 @@ describe('test dynamoDB', () => {
             "Arn",
           ],
         },
-        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ScalableDimension": "dynamodb:index:WriteCapacityUnits",
         "ServiceNamespace": "dynamodb",
       },
       "Type": "AWS::ApplicationAutoScaling::ScalableTarget",

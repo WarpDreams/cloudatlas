@@ -162,7 +162,7 @@ class DynamoDbTable extends AWSComponent {
                 "MinCapacity": this._scalingMinCapacity,
                 "ResourceId": `table/${this.tableName}/index/${indexName}`,
                 "RoleARN": autoScaleRoleARN,
-                "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
+                "ScalableDimension": `dynamodb:index:${rw}CapacityUnits`,
                 "ServiceNamespace": "dynamodb"
               }
             }
