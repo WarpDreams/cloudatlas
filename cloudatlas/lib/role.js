@@ -1,5 +1,4 @@
 const assert = require('assert')
-const AWSComponent = require('./aws-component').AWSComponent
 const AWSObject = require('./aws-object').AWSObject
 const Policy = require('./policy').Policy
 

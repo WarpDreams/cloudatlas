@@ -1,10 +1,11 @@
-const assert = require('assert')
-const AWSComponent = require('./aws-component').AWSComponent
-const AWSObject = require('./aws-object').AWSObject
-const Policy = require('./policy').Policy
+const assert = require('assert');
+
+const { AWSComponent } = require('./aws-component');
+const { AWSObject } = require('./aws-object');
+const { Policy } = require('./policy');
+const { Role } = require('./role');
 
 const _ = require('lodash')
-
 
 /* all:
 
@@ -43,12 +44,77 @@ class DynamoDbTable extends AWSComponent {
     baseName) {
     super(stackName, baseName)
     this.properties = {
-      "TableName": this.tableName()
+      "TableName": this.tableName
     }
+    this.autoScalingRole = null;
+    this.scalingTargets = null;
   }
 
-  tableName() {
-    return `${this.stackName}_${this.baseName}`
+  get tableName() {
+    return `${this.stackName}_${this.baseName}`;
+  }
+
+  /**
+   * Set the auto scaling for the table or its index. 
+   * If max <= 0, it means switching the auto scaling off
+   * @params target optional, to set which one (table or GSI) the auto scaling applies. Notice: does not support this parameter for now.
+   */
+  setAutoScaling(minCapacity, maxCapacity, target) {
+
+    assert.ok(!target, `Specified auto scaling target '${target}' which is not supported at the moment. auto scaling capacity will apply on the table and all GSIs`);
+
+    assert.ok(minCapacity <= maxCapacity);
+    if (maxCapacity <= 0) {
+      this.autoScalingRole = null;
+      this.scalingTargets = null;
+    }
+    else {
+      this.autoScalingRole = new Role(this.stackName, this.baseName + 'AutoScaling');
+      this.autoScalingRole.policyStatements = [{
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:DescribeTable",
+          "dynamodb:UpdateTable",
+          "cloudwatch:PutMetricAlarm",
+          "cloudwatch:DescribeAlarms",
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:SetAlarmState",
+          "cloudwatch:DeleteAlarms"
+        ],
+        "Resource": [
+          this.getValue('ARN'),
+          {
+            "Fn::Join": ["", [this.getValue('ARN'), "/index/*"]]
+          } //Also allow all indexes 
+        ]
+      }]
+
+      //Setup ScalableTarget object for this table 
+      this.scalingTargets = {};
+      //For the table itself
+      const readAndWrite = ['Read', 'Write'];
+      for (let rw of readAndWrite) {
+        const tableScalableTargetRead = `${this.fullName}_${rw}_ScalableTarget`;
+        this.scalingTargets[tableScalableTargetRead] = {
+          "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+          "Properties": {
+            "MaxCapacity": maxCapacity,
+            "MinCapacity": minCapacity,
+            "ResourceId": `table/${this.tableName}`,
+            "RoleARN": {
+              "Fn::GetAtt": [
+                this.autoScalingRole.fullName,
+                "Arn"
+              ]
+            },
+            "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
+            "ServiceNamespace": "dynamodb"
+          }
+        }
+      }
+
+      //TODO: Do it for GSI as well.
+    }
   }
 
   /*
@@ -56,7 +122,7 @@ class DynamoDbTable extends AWSComponent {
    */
   setProperties(properties) {
     let copied = _.clone(properties)
-    copied['TableName'] = this.tableName()
+    copied['TableName'] = this.tableName
 
 
     //Default throughput values
@@ -88,7 +154,7 @@ class DynamoDbTable extends AWSComponent {
       "dynamodb:Query",
       "dynamodb:Scan",
     ]
-    
+
     actionsTable[AWSComponent.ACCESS_LEVEL_WRITE] = [
       'dynamodb:BatchWriteItem',
       'dynamodb:DeleteItem',
@@ -98,7 +164,7 @@ class DynamoDbTable extends AWSComponent {
       "dynamodb:UpdateTable",
       "dynamodb:UntagResource"
     ]
-    
+
     actionsTable[AWSComponent.ACCESS_LEVEL_ADMIN] = [
       'dynamodb:CreateTable',
       'dynamodb:DeleteTable',
@@ -106,7 +172,7 @@ class DynamoDbTable extends AWSComponent {
     ]
 
     let allowedActions = []
-    accessLevels.forEach((level)=>{
+    accessLevels.forEach((level) => {
       let actions = actionsTable[level]
       allowedActions = allowedActions.concat(actions)
     })
@@ -117,8 +183,7 @@ class DynamoDbTable extends AWSComponent {
       "Resource": [
         this.getValue('ARN'),
         {
-          "Fn::Join": ["", 
-          [this.getValue('ARN'), "/index/*"]] 
+          "Fn::Join": ["", [this.getValue('ARN'), "/index/*"]]
         } //Also allow all indexes 
       ]
     }
@@ -126,10 +191,16 @@ class DynamoDbTable extends AWSComponent {
 
   get template() {
     let template = {}
-    template[this.fullName] =  {
-      "Type" : "AWS::DynamoDB::Table",
-      "Properties" : this.properties
+    template[this.fullName] = {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": this.properties
     }
+
+    if (this.autoScalingRole && this.scalingTargets) {
+      template = _.merge(template, this.autoScalingRole.template);
+      template = _.merge(template, this.scalingTargets);
+    }
+
     return template
   }
 }
