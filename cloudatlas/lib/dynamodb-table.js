@@ -48,6 +48,8 @@ class DynamoDbTable extends AWSComponent {
     }
     this.autoScalingRole = null;
     this.scalingItems = null;
+    this.autoScaleInSecs = 30;
+    this.autoScaleOutSecs = 30;
   }
 
   get tableName() {
@@ -129,6 +131,26 @@ class DynamoDbTable extends AWSComponent {
             "RoleARN": autoScaleRoleARN,
             "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
             "ServiceNamespace": "dynamodb"
+          }
+        }
+
+        const tableScalingPolicy = `${this.fullName}${rw}ScalingPolicy`;
+        this.scalingItems[tableScalingPolicy] = {
+          "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+          "Properties": {
+            "PolicyName": tableScalingPolicy,
+            "PolicyType": "TargetTrackingScaling",
+            "ScalingTargetId": {
+              "Ref": tableScalableTarget
+            },
+            "TargetTrackingScalingPolicyConfiguration": {
+              "TargetValue": 70,
+              "ScaleInCooldown": this.autoScaleInSecs,
+              "ScaleOutCooldown": this.autoScaleOutSecs,
+              "PredefinedMetricSpecification": {
+                "PredefinedMetricType": `DynamoDB${rw}CapacityUtilization`
+              }
+            }
           }
         }
 
