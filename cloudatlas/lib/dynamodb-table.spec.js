@@ -70,16 +70,108 @@ describe('test dynamoDB', () => {
     }
 
     table.setProperties(tableProperties)
-    table.setAutoScaling(1, 100);
+    table.setAutoScaling(1, 911);
 
     const template = table.template;
-    
+
     //console.log('----- the template: ' + JSON.stringify(template, null, 2));
 
     //Read scaling item
-    expect(template['unitTestDynamoDbTable_Read_ScalableTarget']).toEqual({});
+    expect(template['unitTestDynamoDbTableReadScalableTarget']).toEqual({
+      "Properties": {
+        "MaxCapacity": 911,
+        "MinCapacity": 1,
+        "ResourceId": "table/CloudAtlasTest_unitTest",
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "unitTestAutoScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    });
 
     //Write scaling item
+    expect(template['unitTestDynamoDbTableWriteScalableTarget']).toEqual({
+      "Properties": {
+        "MaxCapacity": 911,
+        "MinCapacity": 1,
+        "ResourceId": "table/CloudAtlasTest_unitTest",
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "unitTestAutoScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    });
+
+    //Verity auto scaling role:
+    expect(template['unitTestAutoScalingRole']).toEqual({
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "application-autoscaling.amazonaws.com"
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+        "Policies": [{
+          "PolicyName": "unitTestAutoScalingRolePolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:DescribeTable",
+                "dynamodb:UpdateTable",
+                "cloudwatch:PutMetricAlarm",
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:SetAlarmState",
+                "cloudwatch:DeleteAlarms"
+              ],
+              "Resource": [{
+                  "Fn::GetAtt": [
+                    "unitTestDynamoDbTable",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "", [{
+                        "Fn::GetAtt": [
+                          "unitTestDynamoDbTable",
+                          "Arn"
+                        ]
+                      },
+                      "/index/*"
+                    ]
+                  ]
+                }
+              ]
+            }]
+          }
+        }],
+        "Path": "/"
+      }
+    });
+
+
   })
 
   test('Should create dynamoDB table spec correctly', () => {
