@@ -52,7 +52,7 @@ describe('test dynamoDB', () => {
     })
   })
 
-  test('Should create dynamDB table auto scaling correctly', () => {
+  test('Should create dynamDB table auto scaling correctly for table', () => {
     const tableProperties = {
       TableName: "Scale", //This property is useless! 
       KeySchema: [
@@ -71,11 +71,10 @@ describe('test dynamoDB', () => {
 
     table.setProperties(tableProperties)
     table.setAutoScaling(1, 911);
-    
+
     table.autoScaleInSecs = 15;
     table.autoScaleOutSecs = 14;
-  
-    console.log('Set autoScaleInSecs: ' + table.autoScaleInSecs);
+
     const template = table.template;
 
     //console.log('----- the template: ' + JSON.stringify(template, null, 2));
@@ -182,6 +181,109 @@ describe('test dynamoDB', () => {
         "PolicyType": "TargetTrackingScaling",
         "ScalingTargetId": {
           "Ref": "unitTestDynamoDbTableWriteScalableTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 70,
+          "ScaleInCooldown": 15,
+          "ScaleOutCooldown": 14,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      }
+    });
+  })
+
+  test('Should create dynamDB table auto scaling correctly for index', () => {
+    const tableProperties = {
+      TableName: "Scale", //This property is useless! 
+      KeySchema: [
+        { AttributeName: "year", KeyType: "HASH" }, //Partition key
+        { AttributeName: "title", KeyType: "RANGE" } //Sort key
+      ],
+      AttributeDefinitions: [
+        { AttributeName: "year", AttributeType: "N" },
+        { AttributeName: "title", AttributeType: "S" },
+        { AttributeName: "itemForGSI", AttributeDataType: "S" }
+      ],
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 12,
+        WriteCapacityUnits: 12
+      },
+
+      GlobalSecondaryIndexes: [
+        //Group index by groups
+        {
+          IndexName: 'ScaleIndex',
+          KeySchema: [
+            { AttributeName: "itemForGSI", KeyType: "HASH" }
+          ],
+
+          Projection: {
+            ProjectionType: "ALL"
+          },
+
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 1,
+            WriteCapacityUnits: 1
+          }
+        }
+      ]
+    }
+
+    table.setProperties(tableProperties)
+    table.setAutoScaling(1, 911);
+
+    table.autoScaleInSecs = 15;
+    table.autoScaleOutSecs = 14;
+
+    const template = table.template;
+
+    //console.log('----- the template: ' + JSON.stringify(template, null, 2));
+
+    //Read scaling item
+    expect(template['ScaleIndexReadScalableTarget']).toEqual({
+      "Properties": {
+        "MaxCapacity": 911,
+        "MinCapacity": 1,
+        "ResourceId": "table/CloudAtlasTest_unitTest/index/ScaleIndex",
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "unitTestAutoScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "dynamodb:table:ReadCapacityUnits",
+        "ServiceNamespace": "dynamodb",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    });
+
+    //Write scaling item
+    expect(template['ScaleIndexWriteScalableTarget']).toEqual({
+      "Properties": {
+        "MaxCapacity": 911,
+        "MinCapacity": 1,
+        "ResourceId": "table/CloudAtlasTest_unitTest/index/ScaleIndex",
+        "RoleARN": {
+          "Fn::GetAtt": [
+            "unitTestAutoScalingRole",
+            "Arn",
+          ],
+        },
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb",
+      },
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+    });
+
+    expect(template['ScaleIndexWriteScalingPolicy']).toEqual({
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": "ScaleIndexWriteScalingPolicy",
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "ScaleIndexWriteScalableTarget"
         },
         "TargetTrackingScalingPolicyConfiguration": {
           "TargetValue": 70,

@@ -166,6 +166,28 @@ class DynamoDbTable extends AWSComponent {
                 "ServiceNamespace": "dynamodb"
               }
             }
+
+
+            const indexScalingPolicy = `${indexName}${rw}ScalingPolicy`;
+            this._scalingItems[indexScalingPolicy] = {
+              "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+              "Properties": {
+                "PolicyName": indexScalingPolicy,
+                "PolicyType": "TargetTrackingScaling",
+                "ScalingTargetId": {
+                  "Ref": indexScalableTarget
+                },
+                "TargetTrackingScalingPolicyConfiguration": {
+                  "TargetValue": 70,
+                  "ScaleInCooldown": this.autoScaleInSecs,
+                  "ScaleOutCooldown": this.autoScaleOutSecs,
+                  "PredefinedMetricSpecification": {
+                    "PredefinedMetricType": `DynamoDB${rw}CapacityUtilization`
+                  }
+                }
+              }
+            }
+            
           } // for gsi of
         } //if
       }
@@ -269,7 +291,7 @@ class DynamoDbTable extends AWSComponent {
       "Type": "AWS::DynamoDB::Table",
       "Properties": this.properties
     }
-    
+
     this._updateAutoScalingItems();
 
     if (this._autoScalingRole && this._scalingItems) {
