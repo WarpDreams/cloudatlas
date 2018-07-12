@@ -52,7 +52,7 @@ describe('test dynamoDB', () => {
     })
   })
 
-  test('Should create dynamDB table auto scalling correctly', () => {
+  test('Should create dynamDB table auto scaling correctly', () => {
     const tableProperties = {
       TableName: "Scale", //This property is useless! 
       KeySchema: [
@@ -71,7 +71,11 @@ describe('test dynamoDB', () => {
 
     table.setProperties(tableProperties)
     table.setAutoScaling(1, 911);
-
+    
+    table.autoScaleInSecs = 15;
+    table.autoScaleOutSecs = 14;
+  
+    console.log('Set autoScaleInSecs: ' + table.autoScaleInSecs);
     const template = table.template;
 
     //console.log('----- the template: ' + JSON.stringify(template, null, 2));
@@ -171,7 +175,24 @@ describe('test dynamoDB', () => {
       }
     });
 
-
+    expect(template['unitTestDynamoDbTableWriteScalingPolicy']).toEqual({
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": "unitTestDynamoDbTableWriteScalingPolicy",
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {
+          "Ref": "unitTestDynamoDbTableWriteScalableTarget"
+        },
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 70,
+          "ScaleInCooldown": 15,
+          "ScaleOutCooldown": 14,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      }
+    });
   })
 
   test('Should create dynamoDB table spec correctly', () => {

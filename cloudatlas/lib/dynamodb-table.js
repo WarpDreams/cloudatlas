@@ -46,37 +46,33 @@ class DynamoDbTable extends AWSComponent {
     this.properties = {
       "TableName": this.tableName
     }
-    this.autoScalingRole = null;
-    this.scalingItems = null;
+    this._autoScalingRole = null;
+    this._scalingItems = null;
+
     this.autoScaleInSecs = 30;
     this.autoScaleOutSecs = 30;
+
+    this._scalingMinCapacity = 0;
+    this._scalingMaxCapacity = 0;
+
   }
 
   get tableName() {
     return `${this.stackName}_${this.baseName}`;
   }
 
-  /**
-   * Set the auto scaling for the table or its index. 
-   * If max <= 0, it means switching the auto scaling off. 
-   * 
-   * @params target optional, to set which one (table or GSI) the auto scaling applies. Notice: does not support this parameter for now.
-   */
-  setAutoScaling(minCapacity, maxCapacity, target) {
+  _updateAutoScalingItems() {
 
     // For detailed CloudFormation document: 
     // https://aws.amazon.com/blogs/database/how-to-use-aws-cloudformation-to-configure-auto-scaling-for-amazon-dynamodb-tables-and-indexes/
 
-    assert.ok(!target, `Specified auto scaling target '${target}' which is not supported at the moment. auto scaling capacity will apply on the table and all GSIs`);
-
-    assert.ok(minCapacity <= maxCapacity);
-    if (maxCapacity <= 0) {
-      this.autoScalingRole = null;
-      this.scalingItems = null;
+    if (this._scalingMaxCapacity <= 0 || this._scalingMinCapacity <= 0) {
+      this._autoScalingRole = null;
+      this._scalingItems = null;
     }
     else {
-      this.autoScalingRole = new Role(this.stackName, this.baseName + 'AutoScaling');
-      this.autoScalingRole.policyStatements = [{
+      this._autoScalingRole = new Role(this.stackName, this.baseName + 'AutoScaling');
+      this._autoScalingRole.policyStatements = [{
         "Effect": "Allow",
         "Action": [
           "dynamodb:DescribeTable",
@@ -95,7 +91,7 @@ class DynamoDbTable extends AWSComponent {
         ]
       }]
 
-      this.autoScalingRole.assumeRolePolicyDocument = {
+      this._autoScalingRole.assumeRolePolicyDocument = {
         "Version": "2012-10-17",
         "Statement": [{
           "Effect": "Allow",
@@ -111,22 +107,22 @@ class DynamoDbTable extends AWSComponent {
       }
 
       //Setup ScalableTarget object for this table and all GSI
-      this.scalingItems = {};
+      this._scalingItems = {};
       //For the table itself
       const readAndWrite = ['Read', 'Write'];
       for (let rw of readAndWrite) {
         const tableScalableTarget = `${this.fullName}${rw}ScalableTarget`;
         const autoScaleRoleARN = {
           "Fn::GetAtt": [
-            this.autoScalingRole.fullName,
+            this._autoScalingRole.fullName,
             "Arn"
           ]
         };
-        this.scalingItems[tableScalableTarget] = {
+        this._scalingItems[tableScalableTarget] = {
           "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
           "Properties": {
-            "MaxCapacity": maxCapacity,
-            "MinCapacity": minCapacity,
+            "MaxCapacity": this._scalingMaxCapacity,
+            "MinCapacity": this._scalingMinCapacity,
             "ResourceId": `table/${this.tableName}`,
             "RoleARN": autoScaleRoleARN,
             "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
@@ -135,7 +131,8 @@ class DynamoDbTable extends AWSComponent {
         }
 
         const tableScalingPolicy = `${this.fullName}${rw}ScalingPolicy`;
-        this.scalingItems[tableScalingPolicy] = {
+
+        this._scalingItems[tableScalingPolicy] = {
           "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
           "Properties": {
             "PolicyName": tableScalingPolicy,
@@ -158,11 +155,11 @@ class DynamoDbTable extends AWSComponent {
           for (let gsi of this.properties['GlobalSecondaryIndexes']) {
             const indexName = gsi['IndexName'];
             const indexScalableTarget = `${indexName}${rw}ScalableTarget`;
-            this.scalingItems[indexScalableTarget] = {
+            this._scalingItems[indexScalableTarget] = {
               "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
               "Properties": {
-                "MaxCapacity": maxCapacity,
-                "MinCapacity": minCapacity,
+                "MaxCapacity": this._scalingMaxCapacity,
+                "MinCapacity": this._scalingMinCapacity,
                 "ResourceId": `table/${this.tableName}/index/${indexName}`,
                 "RoleARN": autoScaleRoleARN,
                 "ScalableDimension": `dynamodb:table:${rw}CapacityUnits`,
@@ -173,6 +170,25 @@ class DynamoDbTable extends AWSComponent {
         } //if
       }
     }
+  }
+
+  /**
+   * Set the auto scaling for the table or its index. 
+   * If max <= 0, it means switching the auto scaling off. 
+   * 
+   * @params target optional, to set which one (table or GSI) the auto scaling applies. Notice: does not support this parameter for now.
+   */
+  setAutoScaling(minCapacity, maxCapacity, target) {
+
+    // For detailed CloudFormation document: 
+    // https://aws.amazon.com/blogs/database/how-to-use-aws-cloudformation-to-configure-auto-scaling-for-amazon-dynamodb-tables-and-indexes/
+    assert.ok(!target, `Specified auto scaling target '${target}' which is not supported at the moment. auto scaling capacity will apply on the table and all GSIs`);
+    assert.ok(minCapacity <= maxCapacity);
+    assert.ok(minCapacity > 0);
+    assert.ok(maxCapacity > 0);
+
+    this._scalingMinCapacity = minCapacity;
+    this._scalingMaxCapacity = maxCapacity;
   }
 
   /*
@@ -253,10 +269,12 @@ class DynamoDbTable extends AWSComponent {
       "Type": "AWS::DynamoDB::Table",
       "Properties": this.properties
     }
+    
+    this._updateAutoScalingItems();
 
-    if (this.autoScalingRole && this.scalingItems) {
-      template = _.merge(template, this.scalingItems);
-      template = _.merge(template, this.autoScalingRole.template);
+    if (this._autoScalingRole && this._scalingItems) {
+      template = _.merge(template, this._scalingItems);
+      template = _.merge(template, this._autoScalingRole.template);
     }
     return template
   }
