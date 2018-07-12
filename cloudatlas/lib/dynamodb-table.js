@@ -47,7 +47,9 @@ class DynamoDbTable extends AWSComponent {
       "TableName": this.tableName
     }
     this.autoScalingRole = null;
-    this.scalingTargets = null;
+    this.scalingItems = null;
+    this.autoScaleInCoolDownSecs = 30;
+    this.autoScaleOutCoolDownSecs = 30;
   }
 
   get tableName() {
@@ -66,7 +68,7 @@ class DynamoDbTable extends AWSComponent {
     assert.ok(minCapacity <= maxCapacity);
     if (maxCapacity <= 0) {
       this.autoScalingRole = null;
-      this.scalingTargets = null;
+      this.scalingItems = null;
     }
     else {
       this.autoScalingRole = new Role(this.stackName, this.baseName + 'AutoScaling');
@@ -89,13 +91,29 @@ class DynamoDbTable extends AWSComponent {
         ]
       }]
 
+      this.autoScalingRole.assumeRolePolicyDocument = {
+        "Version": "2012-10-17",
+        "Statement": [{
+          "Effect": "Allow",
+          "Principal": {
+            "Service": [
+              "application-autoscaling.amazonaws.com"
+            ]
+          },
+          "Action": [
+            "sts:AssumeRole"
+          ]
+        }]
+      };
+
+      this.scalingItems = {};
+
       //Setup ScalableTarget object for this table 
-      this.scalingTargets = {};
       //For the table itself
       const readAndWrite = ['Read', 'Write'];
       for (let rw of readAndWrite) {
-        const tableScalableTargetRead = `${this.fullName}_${rw}_ScalableTarget`;
-        this.scalingTargets[tableScalableTargetRead] = {
+        const tableScalableTargetRead = `${this.fullName}${rw}ScalableTarget`;
+        this.scalingItems[tableScalableTargetRead] = {
           "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
           "Properties": {
             "MaxCapacity": maxCapacity,
@@ -111,7 +129,34 @@ class DynamoDbTable extends AWSComponent {
             "ServiceNamespace": "dynamodb"
           }
         }
+
+        //Add scaling policy
+        const tableScalablePolicy = `${this.fullName}${rw}ScalingPolicy`;
+        this.scalingItems[tableScalablePolicy] = {
+          "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+          "Properties": {
+            "PolicyName": tableScalablePolicy,
+            "PolicyType": "TargetTrackingScaling",
+            "ScalingTargetId": {
+              "Ref": tableScalableTargetRead
+            },
+            "TargetTrackingScalingPolicyConfiguration": {
+              "TargetValue": 70,
+              "ScaleInCooldown": this.autoScaleInCoolDownSecs,
+              "ScaleOutCooldown": this.autoScaleOutCoolDownSecs,
+              "PredefinedMetricSpecification": {
+                //Only two possible values:
+                //DynamoDBReadCapacityUtilization
+                //DynamoDBWriteCapacityUtilization
+                //Which one must match the ScalableDimension of ScalableTarget 
+                "PredefinedMetricType": `DynamoDB${rw}CapacityUtilization` //Only two possible values: 
+              }
+            }
+          }
+        }
+        
       }
+
 
       //TODO: Do it for GSI as well.
     }
@@ -196,9 +241,9 @@ class DynamoDbTable extends AWSComponent {
       "Properties": this.properties
     }
 
-    if (this.autoScalingRole && this.scalingTargets) {
+    if (this.autoScalingRole && this.scalingItems) {
       template = _.merge(template, this.autoScalingRole.template);
-      template = _.merge(template, this.scalingTargets);
+      template = _.merge(template, this.scalingItems);
     }
 
     return template

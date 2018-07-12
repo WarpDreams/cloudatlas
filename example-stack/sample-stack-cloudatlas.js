@@ -62,6 +62,8 @@ const wirePersistStack = (stack) => {
       { AttributeName: "title", AttributeType: "S" }
     ]
   });
+  
+  sampleStackPersistTable.setAutoScaling(1, 11);
 
   //Create sampleStackPersistUser pool
   sampleStackPersistUserPool = stack.createCognitoUserPool('Users')
@@ -129,7 +131,7 @@ const wireFunctionStack = (stack2) => {
   ]))
 
   sampleStackLambda.setEnvVariables({
-    'DYNAMODB_TABLE_NAME': sampleStackPersistTable.tableName(),
+    'DYNAMODB_TABLE_NAME': sampleStackPersistTable.tableName,
     'BUCKET_NAME': sampleStackPersistBucket.bucketName
   })
 

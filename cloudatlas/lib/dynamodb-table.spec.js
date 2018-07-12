@@ -74,7 +74,7 @@ describe('test dynamoDB', () => {
 
     const template = table.template;
     
-    console.log('----- the template: ' + JSON.stringify(template, null, 2));
+    //console.log('----- the template: ' + JSON.stringify(template, null, 2));
 
     //Read scaling item
     expect(template['unitTestDynamoDbTable_Read_ScalableTarget']).toEqual({});
