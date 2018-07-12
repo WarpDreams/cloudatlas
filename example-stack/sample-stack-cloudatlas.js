@@ -22,6 +22,9 @@ let sampleStackPersistUserPoolClient = null;
 let sampleStackPersistUser = null;
 let sampleStackPersistBucket = null;
 
+let sampleStackIdentityPool = null;
+let sampleStackTestUserGroup = null;
+
 const wireStack = (name, stack) => {
   if (name.indexOf('sample-stack-persist-cloudatlas') === 0) {
     wirePersistStack(stack);

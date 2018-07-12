@@ -27,12 +27,8 @@
     "source": "sample-stack-cloudatlas",
     "stacks": [
       {
-        "name": {
-          "dev": "sample-stack-persist-cloudatlas-dev",
-          "test": "sample-stack-persist-cloudatlas-test"
-        }
+        "name": "sample-stack-persist-cloudatlas"
       },
-
       {
         "name": "sample-stack-functions-cloudatlas",
         "lambdaSourceFiles": [
