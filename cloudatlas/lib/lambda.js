@@ -8,11 +8,10 @@ const LAMBDA_DEFAULT_TIMEOUT_SECS = 10
 const LAMBDA_DEFAULT_MEMORY_SIZE_MB = 128
 
 class Lambda extends AWSComponent {
-  constructor(zone,
-    accountNumberString,
+  constructor(
     stackName,
     baseName) {
-    super(zone, accountNumberString, stackName, baseName)
+    super(stackName, baseName)
     this.envVariables = {}
     this.timeoutSecs = LAMBDA_DEFAULT_TIMEOUT_SECS
     this.memorySizeMB = LAMBDA_DEFAULT_MEMORY_SIZE_MB
