@@ -1,0 +1,31 @@
+{
+  "name": "cloudatlas-and-example",
+  "version": "1.0.0",
+  "description": "Cloudatlas and examples, docs",
+  "main": "index.js",
+  "scripts": {
+    "lerna": "./node_modules/lerna/bin/lerna.js",
+    "bootstrap": "./node_modules/lerna/bin/lerna.js bootstrap",
+    "jsdoc": "./node_modules/.bin/jsdoc -d cloudatlas-docs cloudatlas/lib",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "jsdoc": "cloudatlas/**/*.js"
+  },
+  "keywords": [
+    "cloudatlas",
+    "aws"
+  ],
+  "author": "Jianyin Shen",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^23.3.0",
+    "jsdoc": "^3.5.5",
+    "lerna": "^2.11.0",
+    "npm-watch": "^0.3.0"
+  },
+  "dependencies": {
+    "camelcase": "^5.0.0",
+    "lodash": "^4.17.10"
+  }
+}

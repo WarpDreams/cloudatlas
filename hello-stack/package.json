@@ -1,0 +1,41 @@
+{
+  "name": "cloudatlas-hello-stack",
+  "version": "1.0.0",
+  "description": "An example stack using Cloudatlas",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ./node_modules/jest/bin/jest.js",
+    "cloudatlas": "node ./node_modules/@warpdreams/cloudatlas/bin/cloudatlas.js"
+  },
+  "keywords": [
+    "cloudatlas",
+    "aws"
+  ],
+  "author": "Jianyin Shen",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.263.1",
+    "lodash": "^4.17.10",
+    "winston": "^3.0.0"
+  },
+  "devDependencies": {
+    "@warpdreams/cloudatlas": "^0.1.0",
+    "gulp": "^3.9.1"
+  },
+  "cloudatlas": {
+    "source": "hello-stack-cloudatlas",
+    "stacks": [
+      {
+        "name": "hello-stack",
+        "lambdaSourceFiles": [
+          "hello-lambda.js",
+          "node_modules/**/*"
+        ]
+      }
+    ],
+    "bucket": {
+      "region": "ap-southeast-2",
+      "name": "wd-build-products"
+    }
+  }
+}
