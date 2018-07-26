@@ -14,12 +14,13 @@ const gulp = require('gulp');
 let zip = require("gulp-zip");
 const log = require('winston');
 const _ = require('lodash');
+const YAML = require('json2yaml');
 const { parseStackName } = require('../utils');
 
 const { StackManager, CloudFormation, Lambda } = require('../index');
 
 const DEST_PATH = '.cloudatlas';
-const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION } = process.env;
+const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_DEFAULT_REGION } = process.env;
 
 const s3 = require('gulp-s3-upload')({
   accessKeyId: AWS_ACCESS_KEY_ID,
@@ -31,6 +32,7 @@ program
   .usage('[options] package|upload|deploy')
   .option('-v, --verbose', 'Print more info')
   .option('-s, --stack <name>', 'Specify the target stack. ')
+  .option('-y --gen-serverless-yml', 'After upload, generate serverless.yaml file')
   .parse(process.argv);
 
 if (program.verbose) {
@@ -38,6 +40,12 @@ if (program.verbose) {
 }
 else {
   log.level = 'info';
+}
+
+let shouldGenServerlessYml = false;
+if (program.genServerlessYml) {
+  shouldGenServerlessYml = true;
+  //console.log('------- specified to generate serverless yml');
 }
 
 const checkConfigurations = (package_json) => {
@@ -55,7 +63,7 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
 
   const { source, stacks, bucket } = cloudatlasConfig;
   const stackManager = new StackManager();
-  
+
   const fullScriptPath = path.join(process.cwd(), source);
   log.debug(`Running stack assembly scripts:  ${fullScriptPath}`);
   const { wireStack, afterStackDeploy } = require(fullScriptPath);
@@ -159,6 +167,38 @@ const makeGulpTasks = async (package_json, stacksInfo) => {
           .on('error', function (error) {
             log.error('Upload encountered error: ', error);
             throw error;
+          })
+          .on('end', function () {
+            if (shouldGenServerlessYml) {
+
+              let yml_file_name = 'serverless.yml';
+
+              if (stacks.length != 1) {
+                //Multiple stacks. Need to name differently
+                yml_file_name = `serverless-${originalStackName}.yml`;
+              }
+
+              const serverlessYML = {
+                service: originalStackName,
+                provider: {
+                  name: 'aws',
+                  stage: process.env.NODE_ENV,
+                  region: AWS_REGION || AWS_DEFAULT_REGION,
+                  deploymentBucket: bucket.name
+                },
+                resources: null  //To be field
+              }
+
+              let cloudFormationObj = stacksByNames[originalStackName];
+              serverlessYML.resources = cloudFormationObj.template;
+
+              //Gen and write serverless.yml file to .cloudatlas
+              const yamlText = YAML.stringify(serverlessYML);
+              const fullPath = path.join(DEST_PATH, yml_file_name);
+
+              log.info('Writing serverless YAML file: ' + fullPath);
+              fs.writeFileSync(fullPath, yamlText);
+            }
           });
       }
       else {
@@ -243,6 +283,10 @@ async function main(command) {
   })
 
   log.debug('Tasks to run: ', tasksToRun);
+
+  if (command != 'upload' && shouldGenServerlessYml) {
+    throw new Error('Inconsistent options: --gen-serverless-yml is only applicable for upload command');
+  }
 
   for (let task of tasksToRun) {
     gulp.task(task)();

@@ -289,6 +289,16 @@ lambda.policyStatements = [{
 
 Find it [here](https://warpdreams.github.io/cloudatlas-docs)
 
+## Using Cloudatlas With Serverless
+
+Cloudatlas can generate a `serverless.yml` file for your stack. Just run:
+
+```
+npm run cloudatlas -- upload --gen-serverless-yml
+```
+
+You can then find `serverless.yml` under `.cloudatlas` with which you can use Serverless to manage. 
+
 ## Comparison to Alternative Options
 
 ### Cloudatlas vs Writing CloudFormation JSON/YML Template File Directly
