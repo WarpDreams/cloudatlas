@@ -10,6 +10,7 @@ const log = require('winston')
 
 /**
  * This class represents an API Gateway component. 
+ * By default CORS is always enabled.
  */
 class ApiGateway extends AWSComponent {
 
@@ -45,6 +46,9 @@ class ApiGateway extends AWSComponent {
     }
   }
 
+  /**
+   * Available MIME types of the endpoint
+   */
   get binaryMediaTypes() {
     return this.swaggerJSON["x-amazon-apigateway-binary-media-types"];
   }
@@ -113,7 +117,8 @@ class ApiGateway extends AWSComponent {
   }
   
   /**
-   * 
+   * Set the stages the enpoint is deployed to. I.e "alpha", "beta"
+   * @param {array} stages the stages in the form of string array
    */
   setDeploymentStages(stages) {
     assert.equal(stages.constructor, Array)
@@ -122,6 +127,12 @@ class ApiGateway extends AWSComponent {
     this.deploymentStages = _.uniq(stages)
   }
 
+  /**
+   * Switch on IAM authentication for the given path and given methods. 
+   * 
+   * @param {string} path path of the function
+   * @param {array} methods array of methods that needs to have IAM. For example: ["POST", "GET"]
+   */
   setIAM(path, methods) {
 
     const lowercaseMethods = _.map(methods, (m) => {
