@@ -2,8 +2,8 @@ const DynamoDbTable = require('./dynamodb-table').DynamoDbTable
 const AWSComponent = require('./aws-component').AWSComponent
 const { CloudFormation } = require('./cloud-formation');
 
-const _ = require('lodash')
-const assert = require('assert')
+const _ = require('lodash');
+const assert = require('assert');
 
 /* global expect */
 
@@ -214,7 +214,7 @@ describe('test dynamoDB', () => {
       GlobalSecondaryIndexes: [
         //Group index by groups
         {
-          IndexName: 'ScaleIndex',
+          IndexName: 'scale_index', //Notice: non-alpha numeric IndexName
           KeySchema: [
             { AttributeName: "itemForGSI", KeyType: "HASH" }
           ],
@@ -246,7 +246,7 @@ describe('test dynamoDB', () => {
       "Properties": {
         "MaxCapacity": 911,
         "MinCapacity": 1,
-        "ResourceId": "table/CloudAtlasTest_unitTest/index/ScaleIndex",
+        "ResourceId": "table/CloudAtlasTest_unitTest/index/scale_index",
         "RoleARN": {
           "Fn::GetAtt": [
             "unitTestAutoScalingRole",
@@ -264,7 +264,7 @@ describe('test dynamoDB', () => {
       "Properties": {
         "MaxCapacity": 911,
         "MinCapacity": 1,
-        "ResourceId": "table/CloudAtlasTest_unitTest/index/ScaleIndex",
+        "ResourceId": "table/CloudAtlasTest_unitTest/index/scale_index",
         "RoleARN": {
           "Fn::GetAtt": [
             "unitTestAutoScalingRole",

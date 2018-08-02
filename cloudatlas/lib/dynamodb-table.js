@@ -5,7 +5,9 @@ const { GenericComponent } = require('./generic-component');
 const { Policy } = require('./policy');
 const { Role } = require('./role');
 
-const _ = require('lodash')
+const _ = require('lodash');
+const upperCamelCase = require('uppercamelcase');
+const isAlphanumeric = require('is-alphanumeric');
 
 /* all:
 
@@ -53,6 +55,8 @@ class DynamoDbTable extends GenericComponent {
     super(stackName, baseName)
     
     this.type = "AWS::DynamoDB::Table";
+    
+    assert.ok(isAlphanumeric(baseName), `Bad DynamoDB table base name '${baseName}', it must be alphanumeric`);
     
     this._autoScalingRole = null;
     this._scalingItems = null;
@@ -166,7 +170,7 @@ class DynamoDbTable extends GenericComponent {
         if (this.properties['GlobalSecondaryIndexes']) {
           for (let gsi of this.properties['GlobalSecondaryIndexes']) {
             const indexName = gsi['IndexName'];
-            const indexScalableTarget = `${indexName}${rw}ScalableTarget`;
+            const indexScalableTarget = upperCamelCase(`${indexName}${rw}ScalableTarget`);
             this._scalingItems[indexScalableTarget] = {
               "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
               "Properties": {
@@ -180,7 +184,7 @@ class DynamoDbTable extends GenericComponent {
             }
 
 
-            const indexScalingPolicy = `${indexName}${rw}ScalingPolicy`;
+            const indexScalingPolicy = upperCamelCase(`${indexName}${rw}ScalingPolicy`);
             this._scalingItems[indexScalingPolicy] = {
               "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
               "Properties": {
