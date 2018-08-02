@@ -59,7 +59,8 @@ const wirePersistStack = (stack) => {
     AttributeDefinitions: [
       { AttributeName: "year", AttributeType: "N" },
       { AttributeName: "title", AttributeType: "S" },
-      { AttributeName: "itemForGSI", AttributeType: "S" }
+      { AttributeName: "itemForGSI", AttributeType: "S" },
+      { AttributeName: "itemForGSI2", AttributeType: "S" },
     ],
 
     GlobalSecondaryIndexes: [
@@ -68,6 +69,22 @@ const wirePersistStack = (stack) => {
         IndexName: 'ScaleIndex',
         KeySchema: [
           { AttributeName: "itemForGSI", KeyType: "HASH" }
+        ],
+
+        Projection: {
+          ProjectionType: "ALL"
+        },
+
+        ProvisionedThroughput: {
+          ReadCapacityUnits: 1,
+          WriteCapacityUnits: 1
+        }
+      },
+      
+      {
+        IndexName: 'scale_index_2',
+        KeySchema: [
+          { AttributeName: "itemForGSI2", KeyType: "HASH" }
         ],
 
         Projection: {
